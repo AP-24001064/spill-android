@@ -8,30 +8,57 @@ SPILL turns voice notes and text dumps into searchable tasks, ideas, notes and f
 - Supabase Edge Functions + OpenAI for transcription, extraction, embeddings and grounded Q&A
 
 ## Setup
-1. Install Node.js LTS, Git, and the Expo Go app.
-2. Create an Expo app and install dependencies:
-   ```bash
-   npx create-expo-app@latest spill --template blank-typescript
-   cd spill
-   npx expo install expo-audio expo-crypto @react-native-async-storage/async-storage
-   npm install @supabase/supabase-js react-native-url-polyfill
-   ```
-3. Copy `App.tsx` from this repo into the project.
-4. Create a Supabase project. Run `supabase/schema.sql` in SQL Editor and create a **private** Storage bucket named `dumps-audio`.
-5. Copy `.env.example` to `.env` and fill in your Supabase URL and anon/publishable key. Never expose a service-role key in the app.
-6. Install the Supabase CLI, link the project, set server-side secrets and deploy:
-   ```bash
-   npm install -g supabase
-   supabase login
-   supabase link --project-ref YOUR_PROJECT_REF
-   supabase secrets set OPENAI_API_KEY=YOUR_OPENAI_API_KEY
-   supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
-   supabase secrets set SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-   supabase secrets set SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
-   supabase functions deploy process-dump
-   supabase functions deploy ask-memory
-   ```
-7. Start the app with `npx expo start`, then scan the QR code using Expo Go.
+
+### 1. Run the Android app
+
+Install Node.js LTS, Git, and Expo Go on your Android phone.
+
+```bash
+git clone https://github.com/AP-24001064/spill-android.git
+cd spill-android
+npm install
+cp .env.example .env
+```
+
+Create a Supabase project, then put its project URL and anon/publishable key in `.env`:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
+```
+
+### 2. Configure Supabase
+
+1. Open the Supabase SQL Editor and run `supabase/schema.sql`.
+2. The SQL creates a private `dumps-audio` Storage bucket and policies.
+3. Enable Email/password authentication in Supabase Auth settings.
+4. Do not disable Row Level Security or put a service-role key in the mobile app.
+
+### 3. Configure and deploy the backend
+
+Install the Supabase CLI and link your project:
+
+```bash
+npm install -g supabase
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase secrets set OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+supabase secrets set SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+supabase functions deploy process-dump
+supabase functions deploy ask-memory
+```
+
+Keep the OpenAI and service-role keys in Supabase secrets only.
+
+### 4. Start the app
+
+```bash
+npx expo start
+```
+
+Scan the QR code with Expo Go. For a standalone Android build, configure EAS Build later. No paid domain is required.
 
 ## What works in this starter
 - Email/password registration and sign-in
