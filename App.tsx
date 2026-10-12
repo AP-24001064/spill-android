@@ -19,6 +19,7 @@ export default function App() {
   const [memories, setMemories] = useState<any[]>([]);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+  const [audioUri, setAudioUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<'dump'|'memory'|'ask'>('dump');
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -46,13 +47,13 @@ export default function App() {
   }
 
   async function submitDump() {
-    if (!dump.trim() && !recorder.uri) return Alert.alert('Add a text dump or record audio first.');
+    if (!dump.trim() && !audioUri) return Alert.alert('Add a text dump or record audio first.');
     setBusy(true);
     try {
       let audioPath: string | null = null;
-      if (recorder.uri) {
+      if (audioUri) {
         const path = `${session!.user.id}/${Date.now()}.m4a`;
-        const response = await fetch(recorder.uri);
+        const response = await fetch(audioUri);
         const blob = await response.blob();
         const upload = await supabase.storage.from('dumps-audio').upload(path, blob, { contentType: 'audio/m4a', upsert: false });
         if (upload.error) throw upload.error;
@@ -62,6 +63,7 @@ export default function App() {
       if (error) throw error;
       Alert.alert('Saved', `Organized into ${data?.count ?? 0} memory items.`);
       setDump('');
+      setAudioUri(null);
       await loadMemories();
     } catch (e: any) { Alert.alert('Could not process dump', e.message ?? 'Please try again.'); }
     finally { setBusy(false); }
@@ -103,8 +105,8 @@ export default function App() {
       {tab==='dump' && <>
         <Text style={{ fontSize:22, fontWeight:'700', marginBottom:10 }}>Get it out of your head.</Text>
         <TextInput multiline placeholder="Brain dump here… tasks, ideas, random thoughts, reminders." value={dump} onChangeText={setDump} textAlignVertical="top" style={{ minHeight:160, backgroundColor:'white', padding:16, borderRadius:16, borderWidth:1, borderColor:'#e4e4e7', fontSize:16 }} />
-        <Pressable style={button} onPress={recState.isRecording ? async () => { await recorder.stop(); } : startRecording}><Text style={white}>{recState.isRecording?'Stop recording':'Record a voice dump'}</Text></Pressable>
-        {recorder.uri ? <Text style={{ color:'#52525b', marginVertical:6 }}>Audio recorded and ready to submit.</Text> : null}
+        <Pressable style={button} onPress={recState.isRecording ? async () => { await recorder.stop(); setAudioUri(recorder.uri ?? null); } : startRecording}><Text style={white}>{recState.isRecording?'Stop recording':'Record a voice dump'}</Text></Pressable>
+        {audioUri ? <Text style={{ color:'#52525b', marginVertical:6 }}>Audio recorded and ready to submit.</Text> : null}
         <Pressable disabled={busy} style={{ ...button, backgroundColor:'#7c3aed', marginTop:12 }} onPress={submitDump}><Text style={white}>{busy?'Processing…':'Finish & organize'}</Text></Pressable>
       </>}
       {tab==='memory' && <>
