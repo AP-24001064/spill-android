@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "SPILL",
+    "slug": "spill-android",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.spill.memory"
+    },
+    "plugins": [
+      "expo-audio"
+    ]
+  }
+}
